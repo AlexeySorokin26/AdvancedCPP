@@ -4,7 +4,8 @@
 
 
 int main() {
-	char x = 10;
-	char* y = &x;
-	const char** q = &y;
+	const int a = 10;
+	int* p = const_cast<int*>(&a); // const_cast
+	*p = 20; 
+	std::cout << "Value of a: " << a << std::endl; // Undefined behavior
 }

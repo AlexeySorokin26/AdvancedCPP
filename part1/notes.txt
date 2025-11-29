@@ -484,3 +484,91 @@ void log(const char* format...) {
 	*q = &x;
 	*p = 'b';
 	std::cout << x;
+
+Приведения типов 
+	static_cast
+		int a = 10;
+		double b = static_cast<double>(a); // static_cast
+		вниз тоже можно обрубим double до int
+	
+	reinterpret_cast делается к ссылке или указтелю
+		берем байты одного типа и интерпретируем их как другой тип
+		int a = 10;
+		char* p = reinterpret_cast<char*>(&a); // reinterpret_cast
+		char& p = reinterpret_cast<char&>(a); // reinterpret_cast
+		// зачем ссылка? мы позволяем посмотреть на старый объект по новому 
+		Он не работает с константностью
+	
+	const_cast делается к ссылке или указтелю
+		const int a = 10;
+		int* p = const_cast<int*>(&a); // const_cast
+		*p = 20; 
+		std::cout << "Value of a: " << a << std::endl; // Undefined behavior
+		// 10 или 20 хз компилятор может оптимизировать и не менять значение a но оставить 10
+
+		void f(const int& x) {
+			int& y = const_cast<int&>(x); // const_cast
+			y = 20; // Undefined behavior
+		} а нам дали не константу в ссылку и мы можем дебажить это 
+	
+	C-style cast 
+		сначала это const_cast потом static_cast потом reinterpret_cast
+		int a = 10;
+		double b = (double)a; // C-style cast
+		1. Const cast
+		А где C-style cast НЕ будет использовать const_cast?
+		Когда типы fundamentally different (принципиально разные). 
+		const_cast не сможет преобразовать const int* в double*, даже если убрать константность. 
+		Типы все равно несовместимы. В этом случае C-style cast перейдет к static_cast или reinterpret_cast.
+		2. Static cast
+		Где не сработает (сам по себе):
+		Преобразование между несвязанными типами указателей (например, int* к double*).
+		Преобразование указателя в несвязанный с ним тип указателя 
+		(например, void*, полученный из char*, обратно в int*).
+		Преобразование указателя в целочисленный тип (и наоборот), если это не void*.
+		3. Reinterpret cast
+		Где не сработает (сам по себе):
+		reinterpret_cast не может убрать константность. Он может изменить тип, но не квалификаторы.
+		не сработает когда нужен dynamic_cast
+		class Base { 
+			public:
+			    virtual ~Base() = default; 
+			};
+		class Derived : public Base {};
+		class OtherDerived : public Base {};
+		
+		Base* base_ptr = new Derived();
+		
+		// C-style cast не может сделать безопасное приведение вниз
+		Derived* derived = (Derived*)base_ptr; // Работает, но ОПАСНО!
+		// Это использует static_cast под капотом - без проверки типа!
+		
+		// А вот это C-style cast сделать НЕ МОЖЕТ:
+		Base* really_other = new OtherDerived();
+		Derived* bad_cast = (Derived*)really_other; // Компилируется, но это UB!
+		// Правильно было бы использовать:
+		Derived* good_cast = dynamic_cast<Derived*>(really_other); // Вернет nullptr
+		dynamic_cast делает то, что не могут делать другие касты - проверку типа во время выполнения 
+		(RTTI - Runtime Type Information):
+		Смотрит реальный тип объекта во время выполнения через vtable
+
+		Нарушаются правила доступа (private/protected наследование)
+		Преобразования между совершенно несвязанными типами
+
+	dynamic_cast
+
+	Стадии сборки программы
+		Препроцессинг это обработка директив препроцессора такие как
+		#include и #define #pragma и условная компиляция #ifdef
+		Компиляция и ассемблирование это преобразование исходного кода в машинный код
+		Линковка это объединение всех объектных файлов и библиотек в единый исполняемый файл
+	
+Санитайзеры
+	AddressSanitizer (ASan) это инструмент для обнаружения ошибок работы с памятью
+		таких как выход за границы массива, использование после освобождения памяти (use-after-free)
+		и утечки памяти.
+	ThreadSanitizer (TSan) это инструмент для обнаружения ошибок конкурентного доступа к памяти
+		в многопоточных программах, таких как гонки данных
+	LeakSanitizer (LSan) это инструмент для обнаружения утечек памяти в программах.
+
+
