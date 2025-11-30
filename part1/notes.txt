@@ -473,7 +473,7 @@ void log(const char* format...) {
 
 	еще чудесней
 	int x = 10;
-	const double y = x;
+	const double& y = x;
 	тут будет временный DOUBLE и меняем x но наш y не менятеся
 
 	const int** cpp = pp;
