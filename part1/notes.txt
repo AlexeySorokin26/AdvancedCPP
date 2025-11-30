@@ -572,3 +572,52 @@ void log(const char* format...) {
 	LeakSanitizer (LSan) это инструмент для обнаружения утечек памяти в программах.
 
 
+3. Введедние в ООП
+	3.1 Класссы и структоры и инкапсуляция
+	struct S{
+	    int a;    // 4 
+		double b; // 8
+	};}
+	
+	размер структуры это сумма размеров всех полей с учетом выравнивания
+	тут будет 16 байт потому что int 4 байта + 4 байта паддинга + double 8 байт
+	компилятор кладет 8 байтный double на адрес кратный 8 удобно в массиве 
+
+	struct S{
+	    int a;    // 4 
+		double b; // 8
+		char c;   // 1
+	};}
+	тут размер структуры будет 24 байта
+
+	struct S{
+	    int a;    // 4 
+		double b; // 8
+		struct SS{
+			char a;
+		} ss; 
+	};}
+	тут размер будет 16  потому что SS еще не существует
+	если мы сделаем SS ss; то будет 24 байта
+
+	S::SS ss; так можно достучаться до вложенной структуры
+
+	struct S {
+		private:
+			int a;    // 4 
+			double b; // 8
+		public:
+			int GetA() const { return a; }
+			double GetB() const { return b; }
+		};
+		
+	int main(int argc, char* argv[]) {
+		S s;
+	
+		reinterpret_cast<int&>(s) = 12;
+		std::cout << s.GetA() << std::endl;
+	
+		char* tmp = reinterpret_cast<char*>(&s) + 8;
+		reinterpret_cast<double&>(*tmp) = 34.56;
+		std::cout << s.GetB() << std::endl;
+	}
