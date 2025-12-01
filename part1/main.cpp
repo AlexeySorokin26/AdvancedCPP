@@ -2,10 +2,24 @@
 #include <vector>
 #include <algorithm>
 
+class C {
+public:
+	int a;
+	C(int a) {
+		std::cout << "C constructor called" << std::endl;
+		std::cout << a << std::endl;
+	}
+};
 
-int main(int argc, char* argv[]) {
-	int x = 10;
-	const double& y = x;
-	x = 100;
-	std::cout << y << std::endl;
+class CC {
+	C c = C(10);
+public:
+	CC(int a)  {
+		c.a = a;
+		std::cout << "CC constructor called" << std::endl;
+	}
+};
+
+int main() {
+	CC cc(0);
 }

@@ -621,3 +621,62 @@ void log(const char* format...) {
 		reinterpret_cast<double&>(*tmp) = 34.56;
 		std::cout << s.GetB() << std::endl;
 	}
+
+	class C{
+	private:
+		void f(int){}
+	public:	
+		void f(float){}
+	}
+	int main(){
+		C c;
+		c.f(10);    // CE потому что f(int) private
+		У нас есть однозначный кандидат f(int) но он приватный (иначе мы бы получили CE как в пример ниже)
+		c.f(10.5f); // OK
+		с.f(3.14);  // CE потому что f(int) private и f(float) не подходит)
+		Мы сначала смотрим на версию какая нам подходит лучше
+		НО что версия с int что с float они обе плохи потому что мы 
+		кастуем вниз и обрезаем 
+		ЗНАЧИТ неоднозначность и ошибка компиляции
+		До проверка приватности не доходит
+	}
+
+	Приватность сделана для того чтобы не вызывать 
+	поэтому она и проверяется первым делом при компиляции
+	
+
+	3.2 Friend функции и классы
+	class MyClass {
+		private:
+			int secretData;
+		public:
+			MyClass(int data) : secretData(data) {}
+			friend void revealSecret(const MyClass& obj);
+	};
+	void revealSecret(const MyClass& obj) {
+		std::cout << obj.secretData << std::endl;
+	}
+
+	3.3 Member inistializer list
+	class MyClass {
+	private:
+		int a;
+		double b;
+		public:
+		MyClass(int x, double y) : a(x), b(y) {} // Member initializer list
+		};
+	Это однозначно нужно для константных полей и ссылок 
+	потому что их нужно инициализировать сразу
+	А иначе мы создаем объект по умолчанию а потом присваиваем значение
+
+	{} это может быть 
+	1 обычная инициализация через вызов конструктора
+	Complex c{3, 4}; // Вызов конструктора Complex(3, 4)}
+	2 через список инициализации
+	MyVector c = {3, 4. 1, 2}; 
+	3 Агрегатная инициализация
+	struct Point {
+		int x;
+		int y;
+	};
+	Point p{10, 20}; // Агрегатная инициализация
