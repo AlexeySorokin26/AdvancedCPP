@@ -680,3 +680,78 @@ void log(const char* format...) {
 		int y;
 	};
 	Point p{10, 20}; // Агрегатная инициализация
+
+	struct C{
+		const int c;
+		int& r;
+	}
+	// Тут нельзя сгенерить конструктор по умолчанию 
+
+	// Тут мы меняем x через ссылку r и потом через y меняем опять x
+	int x = 10;
+	struct C {
+		int& r = x;
+		C(int y) {
+			r = y;
+		}
+	};
+	
+	int main(int argc, char* argv[]) {
+		C c(20);
+		std::cout << c.r << std::endl;
+		std::cout << x << std::endl;
+	}
+	А если мы так сделаем конструктор
+	C(int y) :r(y) {
+	} то ссылка у нас будет уже в классе а не на x
+	Когда мы вошли в тело конструктора мы уже имеет поля 
+	до их еще нет
+
+	struct C{
+		const int& c;
+		C() : c(5) {} 
+	}; // UB потому что мы ссылаемся на временный объект 5 тут не будет действовать продление времени жизни
+	  продление времени жизни работает только внутри функций 
+
+	Контурктор копирвания 
+	Copy on write string
+	Мы не копируем сразу а ставим галочку что нужно скопировать
+	и только тогда когда кто-то попытается изменить строку мы делаем копию
+
+	Делегирующий конструктор. В нем нельзя вызывать инициализацию полей в дополнеиеи
+	class MyClass {
+	private:
+		int a;
+		double b;
+		public:
+		MyClass(int x) : a(x), b(0.0) {} // Первый конструктор
+		MyClass(int x, double y) : MyClass(x) { // Делегирующий конструктор
+			b = y;
+		}
+	};
+
+	String& operator=(const String& other) {
+		if (this != &other) { // Проверка на самоприсваивание
+			delete[] data; // Освобождение текущих ресурсов
+			size = other.size;
+			data = new char[size + 1];
+			std::strcpy(data, other.data);
+		}
+		return *this;
+	}
+	Copy and swap идиома
+	void swap(String& other) noexcept {
+		std::swap(size, other.size);
+		std::swap(data, other.data);
+	}
+	String& operator=(const String& other) { // Передача по значению
+		String copy = other;
+		swap(other); // Обмен ресурсами
+		return *this;
+		// other уничтожится и освободит старые ресурсы
+	}
+	или так
+	string& operator=(String other) { // Передача по значению тут будет копия
+		swap(other); // Обмен ресурсами
+		return *this;
+	}
