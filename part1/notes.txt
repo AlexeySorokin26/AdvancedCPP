@@ -755,3 +755,93 @@ void log(const char* format...) {
 		swap(other); // Обмен ресурсами
 		return *this;
 	}
+
+	Const static explicit 
+	По умолчанию методы класса не являются константными. 
+	Константа это просто то у чего чего нет по отношению к неконстантам.
+	Ну и получается помечая что-то const мы делаем это доступным как для cosnt так и для non-const объектов
+	Перегрузка по константности работает 
+	struct MyClass {
+	int someFunc();
+	};
+
+	int main() {
+		MyClass obj;
+		int result = obj.someFunc(); // так нельзя потому что someFunc не const
+		return 0;
+	}
+
+	struct MyString{
+	
+		char arr[100];
+		char& operator[](size_t index){
+			return arr[index];
+		}
+		char operator[](size_t index) const {
+			return arr[index];
+		} а почему бы так не вернуть? char сам по себе весит 1 байт а не ссылка на char 8 байт?
+		Это не скомпилируется 
+	};
+	Это не скомпилируется, потому что:
+
+	Метод помечен как const, значит arr рассматривается как const char[100]
+	arr[index] имеет тип const char&
+	Нельзя преобразовать const char& в char& без const_cast
+	У константных объектов поля становятся константными внутри методов класса! Жесть
+	Mutable это специальный модификатор члена класса, который позволяет изменять
+	его значение даже в константных методах класса.
+
+
+	Сингелтон
+	strcut Singleton {
+	private:
+		Singleton() {} // Приватный конструктор
+		Singleton(const Singleton&) = delete; // Запрет копирования
+		Singleton& operator=(const Singleton&) = delete; // Запрет присваивания	
+		static Singleton* instance = nullptr;
+	public:
+		static Singelton& GetObj(){
+			if(instance == nullptr)
+				instance = new Singleton();
+			return *ptr;
+		}
+
+	Explicit конструктор
+		предотвращает неявные преобразования типов при инициализации объектов класса
+	пример 
+	Зачем это нужно? Например нам нужно передавать широту и долготу 
+	это все double но кто первый? широта или доглота?
+
+	struct Lattitude{
+		double value;
+		explicit Lattitude(double v) : value(v) {}
+
+		Оператор приведения типа
+			позволяет определить, как объект класса может быть неявно преобразован в другой тип.
+			Это полезно для обеспечения совместимости типов и упрощения использования классов.
+		Также операаторы приведения типов могут быть объявлены как explicit	
+		explicit operator double&() const{
+			return value;
+		} // static cast <double>(lat);
+
+	};}
+
+	struct Longitude{
+		double value;
+		explicit Longitude(double v) : value(v) {}
+	};}
+
+	contextual conversion
+	происходит под if while for и т.д.
+
+	Литеральные суффиксы как еще получить из числа пользовательский тип
+
+	class BigInt{
+	BigInt operator""_bi(long long v) {
+		return BigInt(v);}
+	}
+	BigInt bi = 1_bi;
+
+
+	
+
